@@ -194,8 +194,147 @@ Step    Comment                     command
 
 objective -- to list all the list in firebase item from cloud in this component
 
+Note ** In component ** we can access only corrsponding html and ts file variable-- 
+                --- To use service variable -- we need to INJECT THE VARIABLE FROM SERVICE TO COMPONENT TS FILE ---
 
+9 :         Injection -- remeber Relative path './'+then the path syntax 
+                + Add import { TodoService } from './shared/todo.service';
+
+                + under
+                    ++ @Component({
+                        providers : [TodoService]
+                    })
+
+                    ++ constructor(private todoService : TodoService)
                                     
+                + Define 
+                    ++ toDoListArray : any[]; // its better to take array
+
+                    ++ ngOnInit(){
+                        //we are converting the items from firebase  to into  angular application
+                        this.toDoService.getToDoList().snapshotChanges() //this is return //Angular Observable
+                        .subscribe(item=>{
+                            this.toDoListArray = []; // //initialising aray
+                            item.forEach(element=>{
+                                var x = element.payload.toJSON();
+                                x['$key'] = element.key;
+                                this.toDoListArray.push(x);
+                            })
+
+                            //sort array isCecked false -> true
+                            this.toDOListArray.sort((a,b)=>{
+                                return a.isChecked - b.isChecked;
+                            })
+                        } );
+                    }
+                    }
+
+*** Design to COmponent
+
+10:                     + todo.component.html
+
+                        ++ <div class="jumbotron" style="padding:45px 0px">
+                        <h4 class="text-center"> Todo List APP</h4>
+
+                        </div>
+
+                        **To Inser todoList item from ts file
+
+                        ++ 
+                        <div class="input-group">
+                        <input type="text" class="form-control" #itemTist>
+                        <div class="input-group-addon hover-cursor" (click)=onAdd(itemTitle)>
+                        <i class="fa fa-plus-circle fa-2x"></i>
+                        </div>
+                        </div>
+
+                        ++ Define onAdd(itemTitle) in the todo.component.ts
+
+                            +++
+                                    onAdd(itemTitle){
+                                        this.toDoService.addTitle(itemTitle.value);
+                                        //resetting to its initail state to blank or NULL
+                                        itemTitle.value=null;
+                                    } 
+
+                            +++ test your application
+                                ++++click on add button 
+                                ++++got firebase database
+                                ++++todolistapp
+                                    titles are added
+                                    --> click and expand
+                                            --> corresponding key and title
+                
+***** Now we have to LIST todo component in firebase *************
+
+11  :           + use of toDolistArray
+                    + src/app/todo/todo.component.html
+  
+                    ++ 
+                    <div style="margin:5px 0px">
+                    <ul class="list-group">
+                    <li class="list-group-item" *ngFor="let item of toDoListArray">
+                    <span class="hover-cursor" [class.text-success]="item.isChecked">
+                    <i class="fa fa-lg" [ngClass]="item.isChecked?'fa-check-circle-o' : 'fa-circle-thin'"></i>
+                    </span>
+                    {{item.title}}
+                    <span class="hover-cursor text-danger pull-right">
+                    <i class="fa fa-trash-o fa-lg"></i>
+
+                    </span>
+                    </li>
+                    </ul>
+                    </div>
+
+
+
+*** Update Global StyleSheet ******
+
+12  :               +  src/ styles.css
+                
+                    ++ .hover-cursor{
+                        cursor: pointer;
+                    }
+
+## Adding Check and Uncheck operation on the todoList
+
+13  :               Adding a click event
+                     
+                    + src/app/todo/todo.component.html
+
+                        ++ [class.text-success]="item.isChecked" (click)="alterCheck(item.$key, item.isChecked)"
+
+                    +   Define the function
+                        
+                        src/app/todo/todo.component.ts
+
+                        alterCheck($key:string, isChecked){
+                            this.toDoService.checkOrUnCheckTitle($key,!isChecked);
+                        }
+
+## Delete A TASK
+
+14      :           Add click event
+                    ++ src/app/todo/todo.component.html
+
+                    <span class="hover-cursor text-danger pull-right" (click)="onDelete(item.$key)">
+
+15      :           Add onDelete function to ts file
+                    ++ src/app/todo/todo.component.ts
+
+                    onDelete($key:string){
+                        this.toDoService.removeTitle($key);
+                    }
+
+
+
+
+
+
+
+
+
+
 
 
 
